@@ -1,22 +1,23 @@
 ﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 public class TeamsBot : ActivityHandler
 {
-    // private readonly BotServices _botServices;
     private readonly DialogSet _dialogs;
     private readonly UserState _userState;
     private readonly ConversationState _conversationState;
+    private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-    public TeamsBot(UserState userState, ConversationState conversationState)
+    public TeamsBot(UserState userState, ConversationState conversationState, ConcurrentDictionary<string, ConversationReference> conversationReferences)
     {
-        // _botServices = botServices;
         _userState = userState;
         _conversationState = conversationState;
+        _conversationReferences = conversationReferences;
 
         // Создание набора диалогов
         _dialogs = new DialogSet(_conversationState.CreateProperty<DialogState>("DialogState"));
@@ -47,10 +48,11 @@ public class TeamsBot : ActivityHandler
 
         // Отправка сообщения
         await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {userInput}"), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {turnContext.Activity.From.Id}"), cancellationToken);
 
-        // Пересылка user input в API
-        // var responseFromApi = await _botServices.SendToApi(userInput);
-        await turnContext.SendActivityAsync(MessageFactory.Text($"Ответ от API: responseFromApi"), cancellationToken);
+        // Сохранение ConversationReference
+        var conversationReference = turnContext.Activity.GetConversationReference();
+        _conversationReferences.AddOrUpdate(turnContext.Activity.From.Id, conversationReference, (key, newValue) => conversationReference);
 
         // Получение состояния диалогов
         var dialogContext = await _dialogs.CreateContextAsync(turnContext, cancellationToken);

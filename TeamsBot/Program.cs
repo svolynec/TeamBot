@@ -4,29 +4,30 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using Microsoft.Bot.Schema;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Добавление сервисов
 builder.Services.AddControllers();
 
-// Настройка аутентификации
-var botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(builder.Configuration);
-
-// Настройка адаптера
-builder.Services.AddSingleton<IBotFrameworkHttpAdapter, CloudAdapter>(sp =>
-{
-    var logger = sp.GetRequiredService<ILogger<CloudAdapter>>();
-    return new CloudAdapter(botFrameworkAuthentication, logger);
-});
+// Настройка адаптера без аутентификации для локального тестирования
+builder.Services.AddSingleton<IBotFrameworkHttpAdapter, BotFrameworkHttpAdapter>();
+builder.Services.AddSingleton<BotFrameworkHttpAdapter, BotFrameworkHttpAdapter>();
 
 // Регистрация хранилища и состояний
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 builder.Services.AddSingleton<UserState>();
 builder.Services.AddSingleton<ConversationState>();
 
-// Регистрация бота
+// Регистрация ConcurrentDictionary для хранения ConversationReference
+builder.Services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
+
+// Регистрация HttpClient
+builder.Services.AddHttpClient();
+
+// Регистрация бота и BotServices
 builder.Services.AddTransient<IBot, TeamsBot>();
 builder.Services.AddSingleton<BotServices>();
 
@@ -40,6 +41,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.Map("/api/messages", async context =>
+    {
+        var adapter = context.RequestServices.GetRequiredService<IBotFrameworkHttpAdapter>();
+        var bot = context.RequestServices.GetRequiredService<IBot>();
+        await adapter.ProcessAsync(context.Request, context.Response, bot);
+    });
+});
 
 app.Run();

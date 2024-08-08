@@ -105,3 +105,4 @@ C:\Users\serge\RiderProjects\TeamsBot\TeamsBot\obj\Debug\net8.0\refint\TeamsBot.
 C:\Users\serge\RiderProjects\TeamsBot\TeamsBot\obj\Debug\net8.0\TeamsBot.pdb
 C:\Users\serge\RiderProjects\TeamsBot\TeamsBot\obj\Debug\net8.0\TeamsBot.genruntimeconfig.cache
 C:\Users\serge\RiderProjects\TeamsBot\TeamsBot\obj\Debug\net8.0\ref\TeamsBot.dll
+C:\Users\serge\RiderProjects\TeamsBot\TeamsBot\obj\Debug\net8.0\TeamsBot.sourcelink.json
