@@ -5,29 +5,25 @@ using Microsoft.Bot.Schema;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using WebApplication1.Models;
+using WebApplication1.Services;
 
 [Route("api/sendMessage")]
 [ApiController]
 public class MessageController : ControllerBase
 {
-    private readonly BotFrameworkHttpAdapter  _adapter;
-    private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
+    private readonly IBotMessageHandlerService _messageHandlerService;
 
-    public MessageController(BotFrameworkHttpAdapter  adapter, ConcurrentDictionary<string, ConversationReference> conversationReferences)
+    public MessageController(IBotMessageHandlerService messageHandlerService)
     {
-        _adapter = adapter;
-        _conversationReferences = conversationReferences;
+        _messageHandlerService = messageHandlerService;
     }
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] MessageRequest request)
     {
-        if (_conversationReferences.TryGetValue(request.UserId, out ConversationReference reference))
+        var result = await _messageHandlerService.SendMessageAsync(request.UserId, request.Message);
+        if (result)
         {
-            await _adapter.ContinueConversationAsync(string.Empty, reference, async (context, token) =>
-            {
-                await context.SendActivityAsync(MessageFactory.Text(request.Message), token);
-            }, default);
             return Ok();
         }
 
