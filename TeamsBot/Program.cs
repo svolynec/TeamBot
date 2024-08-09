@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
 using Microsoft.Bot.Schema;
+using WebApplication1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddControllers();
 // Настройка адаптера без аутентификации для локального тестирования
 builder.Services.AddSingleton<IBotFrameworkHttpAdapter, BotFrameworkHttpAdapter>();
 builder.Services.AddSingleton<BotFrameworkHttpAdapter, BotFrameworkHttpAdapter>();
+builder.Services.AddSingleton<IBotMessageHandlerService, BotMessageHandlerService>();
 
 // Регистрация хранилища и состояний
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
@@ -22,7 +24,8 @@ builder.Services.AddSingleton<UserState>();
 builder.Services.AddSingleton<ConversationState>();
 
 // Регистрация ConcurrentDictionary для хранения ConversationReference
-builder.Services.AddSingleton<ConcurrentDictionary<string, ConversationReference>>();
+var conversationReferences = new ConcurrentDictionary<string, ConversationReference>();
+builder.Services.AddSingleton(conversationReferences);
 
 // Регистрация HttpClient
 builder.Services.AddHttpClient();

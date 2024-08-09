@@ -24,44 +24,51 @@ public class TeamsBot : ActivityHandler
         _dialogs.Add(new WaterfallDialog("mainDialog", new WaterfallStep[]
         {
             Step1Async,
-            Step2Async
         }));
     }
 
     private async Task<DialogTurnResult> Step1Async(WaterfallStepContext stepContext, CancellationToken cancellationToken)
     {
-        // Логика первого шага диалога
-        await stepContext.Context.SendActivityAsync("Это первый шаг диалога.", cancellationToken: cancellationToken);
-        return await stepContext.NextAsync(null, cancellationToken);
-    }
-
-    private async Task<DialogTurnResult> Step2Async(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-    {
         // Логика второго шага диалога
-        await stepContext.Context.SendActivityAsync("Это второй шаг диалога.", cancellationToken: cancellationToken);
+        await stepContext.Context.SendActivityAsync("UserId: " + stepContext.Context.Activity.From.Id, cancellationToken: cancellationToken);
         return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
     }
 
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
         var userInput = turnContext.Activity.Text;
-
-        // Отправка сообщения
-        await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {userInput}"), cancellationToken);
-        await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {turnContext.Activity.From.Id}"), cancellationToken);
-
+        
         // Сохранение ConversationReference
         var conversationReference = turnContext.Activity.GetConversationReference();
         _conversationReferences.AddOrUpdate(turnContext.Activity.From.Id, conversationReference, (key, newValue) => conversationReference);
 
-        // Получение состояния диалогов
-        var dialogContext = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
-
-        // Запуск или продолжение диалога
-        var result = await dialogContext.ContinueDialogAsync(cancellationToken);
-        if (result.Status == DialogTurnStatus.Empty)
+        // Проверка на наличие вложений (аудио)
+        if (turnContext.Activity.Attachments != null && turnContext.Activity.Attachments.Count > 0)
         {
-            await dialogContext.BeginDialogAsync("mainDialog", null, cancellationToken);
+            foreach (var attachment in turnContext.Activity.Attachments)
+            {
+                if (attachment.ContentType == "audio/wav" || attachment.ContentType == "audio/mpeg")
+                {
+                    // Обработка аудио-вложения
+                    var audioUrl = attachment.ContentUrl;
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Получено аудио: {audioUrl}"), cancellationToken);
+                }
+            }
+        }
+        else
+        {
+            // Отправка сообщения
+            await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {userInput}"), cancellationToken);
+
+            // Получение состояния диалогов
+            var dialogContext = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
+
+            // Запуск или продолжение диалога
+            var result = await dialogContext.ContinueDialogAsync(cancellationToken);
+            if (result.Status == DialogTurnStatus.Empty)
+            {
+                await dialogContext.BeginDialogAsync("mainDialog", null, cancellationToken);
+            }
         }
     }
 
