@@ -28,6 +28,7 @@
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
       <Content Remove="obj\**" />
+      <Content Include="obj\.gitignore" />
     </ItemGroup>
 
     <ItemGroup>

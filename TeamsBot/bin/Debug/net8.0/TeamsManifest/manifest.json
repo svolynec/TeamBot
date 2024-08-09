@@ -2,13 +2,13 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
   "manifestVersion": "1.11",
   "version": "1.0.0",
-  "id": "your-bot-id",
-  "packageName": "com.yourcompany.yourbot",
+  "id": "88c06257-5cb1-4523-bd6c-1a06f240b0e3",
+  "packageName": "com.lightpointglobal.yourbot",
   "developer": {
     "name": "Your Company",
-    "websiteUrl": "https://yourcompany.com",
-    "privacyUrl": "https://yourcompany.com/privacy",
-    "termsOfUseUrl": "https://yourcompany.com/terms"
+    "websiteUrl": "https://lightpointglobal.com",
+    "privacyUrl": "https://lightpointglobal.com/privacy",
+    "termsOfUseUrl": "https://lightpointglobal.com/terms"
   },
   "name": {
     "short": "YourBot",
@@ -24,7 +24,7 @@
   },
   "bots": [
     {
-      "botId": "YourAppId",
+      "botId": "88c06257-5cb1-4523-bd6c-1a06f240b0e3",
       "scopes": [
         "personal",
         "team",
@@ -50,6 +50,6 @@
     "messageTeamMembers"
   ],
   "validDomains": [
-    "yourbotname.azurewebsites.net"
+    "1074-77-65-86-91.ngrok-free.app"
   ]
 }

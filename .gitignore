@@ -1,6 +1,8 @@
 ﻿.vs
 .idea
 TeamsBot/bin/
+TeamsBot/bin
+TeamsBot/bin/**/
 TeamsBot/obj/
 TeamsBot/obj
 TeamsBot/obj/**/

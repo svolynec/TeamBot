@@ -14,9 +14,31 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Настройка адаптера без аутентификации для локального тестирования
-builder.Services.AddSingleton<IBotFrameworkHttpAdapter, BotFrameworkHttpAdapter>();
-builder.Services.AddSingleton<BotFrameworkHttpAdapter, BotFrameworkHttpAdapter>();
 builder.Services.AddSingleton<IBotMessageHandlerService, BotMessageHandlerService>();
+
+builder.Services.AddSingleton<IBotFrameworkHttpAdapter, BotFrameworkHttpAdapter>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var logger = sp.GetRequiredService<ILogger<BotFrameworkHttpAdapter>>();
+    
+    var credentialProvider = new SimpleCredentialProvider(
+        configuration["MicrosoftAppId"],
+        configuration["MicrosoftAppPassword"]);
+    
+    return new BotFrameworkHttpAdapter(credentialProvider);
+});
+
+builder.Services.AddSingleton<BotFrameworkHttpAdapter, BotFrameworkHttpAdapter>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var logger = sp.GetRequiredService<ILogger<BotFrameworkHttpAdapter>>();
+    
+    var credentialProvider = new SimpleCredentialProvider(
+        configuration["MicrosoftAppId"],
+        configuration["MicrosoftAppPassword"]);
+    
+    return new BotFrameworkHttpAdapter(credentialProvider);
+});
 
 // Регистрация хранилища и состояний
 builder.Services.AddSingleton<IStorage, MemoryStorage>();

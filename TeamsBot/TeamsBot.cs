@@ -54,10 +54,7 @@ public class TeamsBot : ActivityHandler
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Получено аудио: {audioUrl}"), cancellationToken);
                 }
             }
-        }
-        else
-        {
-            // Отправка сообщения
+            
             await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {userInput}"), cancellationToken);
 
             // Получение состояния диалогов
