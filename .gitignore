@@ -2,3 +2,5 @@
 .idea
 TeamsBot/bin/
 TeamsBot/obj/
+TeamsBot/obj
+TeamsBot/obj/**/
