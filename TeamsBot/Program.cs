@@ -56,6 +56,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddTransient<IBot, TeamsBot>();
 builder.Services.AddSingleton<BotServices>();
 
+builder.Services.AddSingleton<ExternalApiService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
