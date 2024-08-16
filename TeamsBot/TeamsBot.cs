@@ -16,7 +16,9 @@ public class TeamsBot : ActivityHandler
     private readonly IConfiguration _configuration;
     private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-    public TeamsBot(IConfiguration configuration, UserState userState, ConversationState conversationState, ConcurrentDictionary<string, ConversationReference> conversationReferences, ExternalApiService externalApiService)
+    public TeamsBot(IConfiguration configuration, UserState userState, ConversationState conversationState,
+        ConcurrentDictionary<string, ConversationReference> conversationReferences,
+        ExternalApiService externalApiService)
     {
         _userState = userState;
         _conversationState = conversationState;
@@ -32,23 +34,27 @@ public class TeamsBot : ActivityHandler
         }));
     }
 
-    private async Task<DialogTurnResult> Step1Async(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+    private async Task<DialogTurnResult> Step1Async(WaterfallStepContext stepContext,
+        CancellationToken cancellationToken)
     {
         // Логика второго шага диалога
-        await stepContext.Context.SendActivityAsync("UserId: " + stepContext.Context.Activity.From.Id, cancellationToken: cancellationToken);
+        // await stepContext.Context.SendActivityAsync("UserId: " + stepContext.Context.Activity.From.Id,
+        //     cancellationToken: cancellationToken);
         return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
     }
 
-    protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+    protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext,
+        CancellationToken cancellationToken)
     {
         var userInput = turnContext.Activity.Text;
-        
+
         // Сохранение ConversationReference
         var conversationReference = turnContext.Activity.GetConversationReference();
-        _conversationReferences.AddOrUpdate(turnContext.Activity.From.Id, conversationReference, (key, newValue) => conversationReference);
+        _conversationReferences.AddOrUpdate(turnContext.Activity.From.Id, conversationReference,
+            (key, newValue) => conversationReference);
 
         // Проверка на наличие вложений (аудио)
-        if (turnContext.Activity.Attachments != null && turnContext.Activity.Attachments.Count > 0)
+        if (turnContext.Activity.Attachments is { Count: > 0 })
         {
             //foreach (var attachment in turnContext.Activity.Attachments)
             //{
@@ -68,30 +74,34 @@ public class TeamsBot : ActivityHandler
                 SessionId = turnContext.Activity.From.Id
             });
 
-            if(response != null)
+            if (response != null)
             {
                 var mode = _configuration["Mode"];
-                if(mode == "Debug")
+                if (mode == "debug")
                 {
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Язык: {response.Language}"), cancellationToken);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Язык: {response.Source_text}"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Язык: {response.Language}"),
+                        cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Язык: {response.Source_text}"),
+                        cancellationToken);
                 }
+
                 foreach (var command in response.Commands)
                 {
-                    if(command != null && command.Actions.Count > 0)
+                    if (command.Command.Actions.Count <= 0) continue;
+                    foreach (var action in command.Command.Actions)
                     {
-                        foreach (var action in command.Actions)
+                        if (action.result?.Output != null)
                         {
-                            if(action != null && action.result?.Output != null)
-                            {
-                                await turnContext.SendActivityAsync(MessageFactory.Text($"Ответ: {action.result.Output}"), cancellationToken);
-                            }
+                            await turnContext.SendActivityAsync(MessageFactory.Text($"Ответ: {action.result.Output}"),
+                                cancellationToken);
                         }
                     }
                 }
-                if (mode == "Debug")
+
+                if (mode == "debug")
                 {
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"{response.Raw_string}"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"{response.Raw_string}"),
+                        cancellationToken);
                 }
             }
 
@@ -107,15 +117,13 @@ public class TeamsBot : ActivityHandler
         }
     }
 
-    protected override Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    protected override Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded,
+        ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
-        foreach (var member in membersAdded)
+        if (membersAdded.Any(member => member.Id != turnContext.Activity.Recipient.Id))
         {
-            if (member.Id != turnContext.Activity.Recipient.Id)
-            {
-                var welcomeText = "Добро пожаловать в Teams Bot!";
-                return turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
-            }
+            var welcomeText = "Добро пожаловать в Teams Bot!";
+            return turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
         }
 
         return base.OnMembersAddedAsync(membersAdded, turnContext, cancellationToken);
