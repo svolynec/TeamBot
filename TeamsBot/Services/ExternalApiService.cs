@@ -1,31 +1,46 @@
-﻿using WebApplication1.Models;
+﻿using Newtonsoft.Json;
+using System.Net;
+using WebApplication1.Models;
 
 namespace WebApplication1.Services
 {
     public class ExternalApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
 
-        public ExternalApiService(IHttpClientFactory httpClientFactory)
+        public ExternalApiService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
+            _configuration = configuration;
             _httpClient = httpClientFactory.CreateClient("externalApi");
         }
 
-        public async Task<string> CallApi(BotDataRequest model)
+        public async Task<BotDataResponse?> CallApi(BotDataRequest model)
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.PostAsJsonAsync("https://localhost:44300/get_data_of_audio_file", model);
+                string baseUrl = _configuration["ExternalApiBaseUrl"];
+                var formContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("source_text", model.SourceText)
+                });
+                HttpResponseMessage response = await _httpClient.PostAsync($"{baseUrl}get_data_of_audio_file", formContent);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadAsStringAsync();
+                    string content = await response.Content.ReadAsStringAsync();
+
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        // Десериализуем JSON в ApiResponseModel
+                        var apiResponse = JsonConvert.DeserializeObject<BotDataResponse>(content);
+                        apiResponse.Raw_string = content;
+
+                        return apiResponse;
+                    }
                 }
-                else
-                {
-                    // Обработка ошибочного ответа
-                    return null;
-                }
+                // Обработка ошибочного ответа
+                return null;
             }
             catch (HttpRequestException ex)
             {

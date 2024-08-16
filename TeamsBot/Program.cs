@@ -60,10 +60,10 @@ builder.Services.AddSingleton<ExternalApiService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseDeveloperExceptionPage();
-}
+//}
 
 app.UseHttpsRedirection();
 app.UseRouting();

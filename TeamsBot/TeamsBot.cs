@@ -5,19 +5,24 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WebApplication1.Services;
 
 public class TeamsBot : ActivityHandler
 {
     private readonly DialogSet _dialogs;
     private readonly UserState _userState;
+    private readonly ExternalApiService _externalApiService;
     private readonly ConversationState _conversationState;
+    private readonly IConfiguration _configuration;
     private readonly ConcurrentDictionary<string, ConversationReference> _conversationReferences;
 
-    public TeamsBot(UserState userState, ConversationState conversationState, ConcurrentDictionary<string, ConversationReference> conversationReferences)
+    public TeamsBot(IConfiguration configuration, UserState userState, ConversationState conversationState, ConcurrentDictionary<string, ConversationReference> conversationReferences, ExternalApiService externalApiService)
     {
         _userState = userState;
         _conversationState = conversationState;
         _conversationReferences = conversationReferences;
+        _externalApiService = externalApiService;
+        _configuration = configuration;
 
         // Создание набора диалогов
         _dialogs = new DialogSet(_conversationState.CreateProperty<DialogState>("DialogState"));
@@ -45,17 +50,50 @@ public class TeamsBot : ActivityHandler
         // Проверка на наличие вложений (аудио)
         if (turnContext.Activity.Attachments != null && turnContext.Activity.Attachments.Count > 0)
         {
-            foreach (var attachment in turnContext.Activity.Attachments)
+            //foreach (var attachment in turnContext.Activity.Attachments)
+            //{
+            //    if (attachment.ContentType == "audio/wav" || attachment.ContentType == "audio/mpeg")
+            //    {
+            //        // Обработка аудио-вложения
+            //        var audioUrl = attachment.ContentUrl;
+            //        await turnContext.SendActivityAsync(MessageFactory.Text($"Получено аудио: {audioUrl}"), cancellationToken);
+            //    }
+            //}
+
+            var response = await _externalApiService.CallApi(new WebApplication1.Models.BotDataRequest
             {
-                if (attachment.ContentType == "audio/wav" || attachment.ContentType == "audio/mpeg")
+                SourceText = userInput,
+                Language = null,
+                FileBytes = null,
+                SessionId = turnContext.Activity.From.Id
+            });
+
+            if(response != null)
+            {
+                var mode = _configuration["Mode"];
+                if(mode == "Debug")
                 {
-                    // Обработка аудио-вложения
-                    var audioUrl = attachment.ContentUrl;
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Получено аудио: {audioUrl}"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Язык: {response.Language}"), cancellationToken);
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Язык: {response.Source_text}"), cancellationToken);
+                }
+                foreach (var command in response.Commands)
+                {
+                    if(command != null && command.Actions.Count > 0)
+                    {
+                        foreach (var action in command.Actions)
+                        {
+                            if(action != null && action.result?.Output != null)
+                            {
+                                await turnContext.SendActivityAsync(MessageFactory.Text($"Ответ: {action.result.Output}"), cancellationToken);
+                            }
+                        }
+                    }
+                }
+                if (mode == "Debug")
+                {
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"{response.Raw_string}"), cancellationToken);
                 }
             }
-            
-            await turnContext.SendActivityAsync(MessageFactory.Text($"Вы сказали: {userInput}"), cancellationToken);
 
             // Получение состояния диалогов
             var dialogContext = await _dialogs.CreateContextAsync(turnContext, cancellationToken);
