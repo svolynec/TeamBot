@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TeamsBot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b534b91d117bab286e63d08a3d412a4709a9e26")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+039d875fdff9da2fc172cfbb148bbca8b7e1ced3")]
 [assembly: System.Reflection.AssemblyProductAttribute("TeamsBot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TeamsBot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1805,11 +1805,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\bot_team\\TeamBot\\TeamsBot\\TeamsBot.csproj",
+      "projectUniqueName": "D:\\speech_project\\speechrecognitionbot\\teams_bot\\TeamsBot\\TeamsBot.csproj",
       "projectName": "TeamsBot",
-      "projectPath": "D:\\bot_team\\TeamBot\\TeamsBot\\TeamsBot.csproj",
+      "projectPath": "D:\\speech_project\\speechrecognitionbot\\teams_bot\\TeamsBot\\TeamsBot.csproj",
       "packagesPath": "C:\\Users\\klobko\\.nuget\\packages\\",
-      "outputPath": "D:\\bot_team\\TeamBot\\TeamsBot\\obj\\",
+      "outputPath": "D:\\speech_project\\speechrecognitionbot\\teams_bot\\TeamsBot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "WFQuc68Cdks=",
+  "dgSpecHash": "DQYZ6cr7Ps8=",
   "success": true,
-  "projectFilePath": "D:\\bot_team\\TeamBot\\TeamsBot\\TeamsBot.csproj",
+  "projectFilePath": "D:\\speech_project\\speechrecognitionbot\\teams_bot\\TeamsBot\\TeamsBot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\klobko\\.nuget\\packages\\adaptivecards\\1.2.3\\adaptivecards.1.2.3.nupkg.sha512",
     "C:\\Users\\klobko\\.nuget\\packages\\microsoft.bot.builder\\4.22.7\\microsoft.bot.builder.4.22.7.nupkg.sha512",
